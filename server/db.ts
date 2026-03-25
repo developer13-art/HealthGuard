@@ -3,7 +3,6 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
-// Configure WebSocket with SSL handling for Replit environment
 class CustomWebSocket extends ws {
   constructor(address: string, protocols?: string | string[]) {
     super(address, protocols, {
@@ -21,9 +20,6 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Normalize the DATABASE_URL to use sslmode=require and channel_binding=require
-// regardless of what is set in the environment (handles Replit's managed URL
-// which may default to sslmode=verify-full that can fail in some environments)
 function normalizeDbUrl(url: string): string {
   const parsed = new URL(url);
   parsed.searchParams.set("sslmode", "require");
