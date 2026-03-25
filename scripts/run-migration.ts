@@ -27,15 +27,24 @@ async function runMigration() {
       'utf-8'
     );
     await db.execute(sql.raw(migration2SQL));
+    console.log('Migration 2 completed');
+
+    // Read and execute the third migration
+    const migration3SQL = fs.readFileSync(
+      path.join(__dirname, '../migrations/0003_add_suspended_until.sql'),
+      'utf-8'
+    );
+    await db.execute(sql.raw(migration3SQL));
+    console.log('Migration 3 completed');
     
     console.log('Migration completed successfully!');
     
-    // Verify the column exists
+    // Verify the suspended_until column exists in users table
     const result = await db.execute(sql.raw(`
       SELECT column_name 
       FROM information_schema.columns 
-      WHERE table_name = 'kyc' 
-      AND column_name = 'affiliated_hospital';
+      WHERE table_name = 'users' 
+      AND column_name = 'suspended_until';
     `));
     
     console.log('Column verification:', result.rows.length > 0 ? 'exists' : 'missing');
