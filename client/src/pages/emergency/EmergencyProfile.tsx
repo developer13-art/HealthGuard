@@ -104,7 +104,7 @@ export default function EmergencyProfile() {
                   id="username"
                   value={profileData.username}
                   onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                  placeholder="emt_smith"
+                  placeholder="user name"
                   data-testid="input-username"
                 />
               </div>
@@ -114,7 +114,7 @@ export default function EmergencyProfile() {
                   id="fullName"
                   value={profileData.fullName}
                   onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
-                  placeholder="John Smith"
+                  placeholder="full name"
                   data-testid="input-full-name"
                 />
               </div>
@@ -135,7 +135,7 @@ export default function EmergencyProfile() {
                   type="tel"
                   value={profileData.contactNumber}
                   onChange={(e) => setProfileData({ ...profileData, contactNumber: e.target.value })}
-                  placeholder="+1 (555) 987-6543"
+                  placeholder="+234 01234567890"
                   data-testid="input-contact"
                 />
               </div>

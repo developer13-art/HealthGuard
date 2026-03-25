@@ -104,7 +104,7 @@ export default function DoctorProfile() {
                   id="username"
                   value={profileData.username}
                   onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                  placeholder="dr_smith"
+                  placeholder="user name"
                   data-testid="input-username"
                 />
               </div>
@@ -114,7 +114,7 @@ export default function DoctorProfile() {
                   id="fullName"
                   value={profileData.fullName}
                   onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
-                  placeholder="Dr. Jane Smith"
+                  placeholder="full name"
                   data-testid="input-full-name"
                 />
               </div>
@@ -125,7 +125,7 @@ export default function DoctorProfile() {
                   type="email"
                   value={profileData.email}
                   onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                  placeholder="jane.smith@hospital.com"
+                  placeholder="example@gmail.com"
                   data-testid="input-email"
                 />
               </div>
@@ -136,7 +136,7 @@ export default function DoctorProfile() {
                   type="tel"
                   value={profileData.phoneNumber}
                   onChange={(e) => setProfileData({ ...profileData, phoneNumber: e.target.value })}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+234 01234567890"
                   data-testid="input-phone"
                 />
               </div>

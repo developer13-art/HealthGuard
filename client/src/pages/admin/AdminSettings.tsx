@@ -121,7 +121,7 @@ export default function AdminSettings() {
             </div>
             <div className="space-y-2">
               <Label>Admin Wallet Address</Label>
-              <Input defaultValue="0x3c17f3F514658fACa2D24DE1d29F542a836FD10A" disabled />
+              <Input defaultValue="0x82e160da7180AF3e2BB89D7095296d61e139a5a4" disabled />
               <p className="text-sm text-muted-foreground">The designated admin wallet</p>
             </div>
             <Button className="w-full">Save Changes</Button>

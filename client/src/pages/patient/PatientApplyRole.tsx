@@ -15,7 +15,7 @@ import { UserCog, Stethoscope, Building2, Ambulance, Building, Loader2, CheckCir
 import { ethers } from "ethers";
 import { useEffect } from "react";
 
-const ADMIN_WALLET = "0x3c17f3F514658fACa2D24DE1d29F542a836FD10A";
+const ADMIN_WALLET = "0x82e160da7180AF3e2BB89D7095296d61e139a5a4";
 const SUBSCRIPTION_AMOUNT = "2"; // 2 BDAG
 
 export default function PatientApplyRole() {
@@ -527,7 +527,7 @@ export default function PatientApplyRole() {
                         id="country"
                         value={applicationData.country}
                         onChange={(e) => setApplicationData({ ...applicationData, country: e.target.value })}
-                        placeholder="e.g., United States"
+                        placeholder="e.g., nigeria"
                         required
                         data-testid="input-country"
                       />
@@ -538,7 +538,7 @@ export default function PatientApplyRole() {
                         id="state"
                         value={applicationData.state}
                         onChange={(e) => setApplicationData({ ...applicationData, state: e.target.value })}
-                        placeholder="e.g., California"
+                        placeholder="e.g., Kaduna"
                         required
                         data-testid="input-state"
                       />
