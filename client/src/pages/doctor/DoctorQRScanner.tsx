@@ -94,9 +94,8 @@ export default function DoctorQRScanner() {
           setIsScanning(false);
         }
       },
-      (errorMessage: string) => {
-        // Ignore scan errors (they happen continuously while scanning)
-        console.log("QR scan error:", errorMessage);
+      (_errorMessage: string) => {
+        // Per-frame errors are expected when no QR is in view — suppress them
       }
     );
 

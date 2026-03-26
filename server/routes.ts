@@ -3134,7 +3134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const kycData = await storage.getKYC(userId);
       
-      if (kycData?.affiliatedHospital && (role === "doctor" || role === "patient")) {
+      if (kycData?.affiliatedHospital && (role === "doctor" || role === "patient" || role === "emergency_responder")) {
         await storage.updateUserInfo(userId, {
           hospitalName: kycData.affiliatedHospital,
         });
@@ -3592,10 +3592,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hospital || hospital.role !== "hospital") {
         return res.status(403).json({ error: "Unauthorized" });
       }
-      
-      // Get patients directly affiliated with this hospital by hospitalName
-      const affiliatedByName = hospital.hospitalName
-        ? await storage.getUsersByHospital(hospital.hospitalName, "patient")
+
+      // Resolve effective hospital name (users table field OR KYC institution name)
+      const hospitalKyc = await storage.getKYC(hospital.id);
+      const effectiveHospitalName = hospital.hospitalName || hospitalKyc?.institutionName;
+
+      // Get patients directly affiliated with this hospital by hospitalName (case-insensitive)
+      const affiliatedByName = effectiveHospitalName
+        ? await storage.getUsersByHospital(effectiveHospitalName, "patient")
+        : [];
+
+      // Also find patients whose KYC affiliatedHospital matches this hospital (catches unsynced records)
+      const affiliatedByKyc = effectiveHospitalName
+        ? await storage.getUsersByKYCAffiliatedHospital(effectiveHospitalName, "patient")
         : [];
       
       // Also include patients admitted or treated at this hospital (even if not affiliated by name)
@@ -3609,6 +3618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Merge all sources, deduplicate
       const patientMap = new Map<string, any>();
       for (const p of affiliatedByName) patientMap.set(p.id, p);
+      for (const p of affiliatedByKyc) if (!patientMap.has(p.id)) patientMap.set(p.id, p);
       for (const pid of [...admittedIds, ...treatedIds]) {
         if (!patientMap.has(pid)) {
           const p = await storage.getUser(pid);
@@ -3675,14 +3685,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hospital || hospital.role !== "hospital") {
         return res.status(403).json({ error: "Unauthorized" });
       }
+
+      // Resolve effective hospital name (users table field OR KYC institution name)
+      const hospitalKyc = await storage.getKYC(hospital.id);
+      const effectiveHospitalName = hospital.hospitalName || hospitalKyc?.institutionName;
       
       // Get treatment logs for this hospital (for enrichment)
       const allTreatments = await storage.getTreatmentLogs();
       const hospitalTreatments = allTreatments.filter(t => t.hospitalId === hospital.id);
       
-      // Only show doctors affiliated with this hospital by hospitalName
-      const affiliatedDoctors = hospital.hospitalName
-        ? await storage.getUsersByHospital(hospital.hospitalName, "doctor")
+      // Show doctors affiliated with this hospital by hospitalName (case-insensitive)
+      const affiliatedDoctors = effectiveHospitalName
+        ? await storage.getUsersByHospital(effectiveHospitalName, "doctor")
+        : [];
+
+      // Also find doctors whose KYC affiliatedHospital matches (catches unsynced records)
+      const affiliatedByKyc = effectiveHospitalName
+        ? await storage.getUsersByKYCAffiliatedHospital(effectiveHospitalName, "doctor")
         : [];
 
       // Also include doctors who have treatment logs at this hospital
@@ -3690,6 +3709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const doctorMap = new Map<string, any>();
       for (const d of affiliatedDoctors) doctorMap.set(d.id, d);
+      for (const d of affiliatedByKyc) if (!doctorMap.has(d.id)) doctorMap.set(d.id, d);
       for (const did of doctorIdsWithTreatments) {
         if (did && !doctorMap.has(did)) {
           const doc = await storage.getUser(did);
@@ -3734,11 +3754,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hospital || hospital.role !== "hospital") {
         return res.status(403).json({ error: "Unauthorized" });
       }
+
+      // Resolve effective hospital name (users table field OR KYC institution name)
+      const hospitalKyc = await storage.getKYC(hospital.id);
+      const effectiveHospitalName = hospital.hospitalName || hospitalKyc?.institutionName;
       
-      // Get responders affiliated by hospital name only (no system-wide fallback)
-      const allResponders = hospital.hospitalName
-        ? await storage.getUsersByHospital(hospital.hospitalName, "emergency_responder")
+      // Get responders affiliated by hospitalName (case-insensitive)
+      const affiliatedByName = effectiveHospitalName
+        ? await storage.getUsersByHospital(effectiveHospitalName, "emergency_responder")
         : [];
+
+      // Also find responders whose KYC affiliatedHospital matches (catches unsynced records)
+      const affiliatedByKyc = effectiveHospitalName
+        ? await storage.getUsersByKYCAffiliatedHospital(effectiveHospitalName, "emergency_responder")
+        : [];
+
+      // Merge and deduplicate
+      const responderMap = new Map<string, any>();
+      for (const r of affiliatedByName) responderMap.set(r.id, r);
+      for (const r of affiliatedByKyc) if (!responderMap.has(r.id)) responderMap.set(r.id, r);
+      const allResponders = Array.from(responderMap.values());
       
       // Enrich with KYC data
       const enrichedResponders = await Promise.all(allResponders.map(async (responder) => {

@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { QrCode, AlertTriangle, Heart, User, Camera, X, FileUp, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
+import jsQR from "jsqr";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
@@ -92,8 +93,8 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
                 });
               }
             },
-            (errorMessage) => {
-              console.log("QR scan error:", errorMessage);
+            (_errorMessage) => {
+              // Per-frame errors are expected when no QR is in view — suppress them
             }
           );
         } catch (err: any) {
@@ -148,37 +149,71 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
     }
   };
 
+  const decodeQRFromFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          return reject(new Error("Canvas not supported"));
+        }
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        URL.revokeObjectURL(url);
+        if (code) {
+          resolve(code.data);
+        } else {
+          // Try with inversion as fallback
+          const codeInverted = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "onlyInvert",
+          });
+          if (codeInverted) {
+            resolve(codeInverted.data);
+          } else {
+            reject(new Error("No QR code found in the image. Please ensure the image is clear and contains a valid QR code."));
+          }
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Failed to load image"));
+      };
+      img.src = url;
+    });
+  };
+
   const handleQRFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
     if (!validTypes.includes(file.type)) {
       toast({
         title: "Invalid File Type",
-        description: "Please upload a PNG or JPG image containing a QR code.",
+        description: "Please upload a PNG, JPG, or WebP image containing a QR code.",
         variant: "destructive",
       });
       return;
     }
 
     setUploadingQR(true);
-    let html5QrCode: Html5Qrcode | null = null;
     try {
-      html5QrCode = new Html5Qrcode("qr-file-reader");
-      
-      const decodedText = await html5QrCode.scanFile(file, true);
-      console.log("Decoded QR text:", decodedText);
+      const decodedText = await decodeQRFromFile(file);
       
       const response = await apiRequest("POST", "/api/emergency/verify-qr", {
         qrData: decodedText,
       });
       const data = await response.json();
-      
-      console.log("API response:", data);
 
       if (data?.success) {
-        console.log("Setting scanned data:", data.data);
         setScannedData(data.data);
         toast({
           title: "QR Code Scanned",
@@ -192,16 +227,12 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
         });
       }
     } catch (error: any) {
-      console.error("QR scan error:", error);
       toast({
         title: "Scan Failed",
         description: error.message || "Failed to scan QR code from the uploaded file. Please ensure the image is clear and contains a valid QR code.",
         variant: "destructive",
       });
     } finally {
-      if (html5QrCode) {
-        html5QrCode.clear();
-      }
       setUploadingQR(false);
       if (qrFileInputRef.current) {
         qrFileInputRef.current.value = '';
@@ -275,7 +306,6 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
 
   return (
     <>
-      <div id="qr-file-reader" style={{ display: 'none' }}></div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>

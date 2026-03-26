@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, desc, or } from "drizzle-orm";
+import { eq, and, desc, or, ilike } from "drizzle-orm";
 import type {
   User, InsertUser,
   KYC, InsertKYC,
@@ -121,6 +121,7 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   markMessagesAsRead(consultationId: string, receiverId: string): Promise<void>;
   getUsersByHospital(hospitalName: string, role?: string): Promise<User[]>;
+  getUsersByKYCAffiliatedHospital(hospitalName: string, role?: string): Promise<User[]>;
   getUsersByRole(role: string): Promise<User[]>;
 
   // Patient Admissions
@@ -625,12 +626,26 @@ export class DatabaseStorage implements IStorage {
   async getUsersByHospital(hospitalName: string, role?: string): Promise<User[]> {
     if (role) {
       return await db.select().from(users).where(and(
-        eq(users.hospitalName, hospitalName),
+        ilike(users.hospitalName, hospitalName),
         eq(users.role, role)
       )).orderBy(users.username);
     }
     
-    return await db.select().from(users).where(eq(users.hospitalName, hospitalName)).orderBy(users.username);
+    return await db.select().from(users).where(ilike(users.hospitalName, hospitalName)).orderBy(users.username);
+  }
+
+  async getUsersByKYCAffiliatedHospital(hospitalName: string, role?: string): Promise<User[]> {
+    const conditions: any[] = [ilike(kyc.affiliatedHospital, hospitalName)];
+    if (role) conditions.push(eq(users.role, role));
+    
+    const rows = await db
+      .select({ user: users })
+      .from(users)
+      .innerJoin(kyc, eq(kyc.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(users.username);
+    
+    return rows.map((r) => r.user);
   }
 
   async getUsersByRole(role: string): Promise<User[]> {
