@@ -19,7 +19,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Claim } from "@shared/schema";
 import { insertClaimSchema } from "@shared/schema";
 
-const claimFormSchema = insertClaimSchema.omit({ hospitalId: true, treatmentLogId: true }).extend({
+const claimFormSchema = insertClaimSchema.omit({ hospitalId: true, treatmentLogId: true, claimNumber: true }).extend({
   patientId: z.string().min(1, "Patient ID is required"),
   connectionId: z.string().min(1, "Insurance connection is required"),
 });
@@ -46,7 +46,6 @@ export default function HospitalClaims() {
   const form = useForm<ClaimFormData>({
     resolver: zodResolver(claimFormSchema),
     defaultValues: {
-      claimNumber: `CLM-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`,
       patientId: "",
       connectionId: "",
       amount: "",
@@ -71,7 +70,6 @@ export default function HospitalClaims() {
       setDialogOpen(false);
       setSelectedPatientId("");
       form.reset({
-        claimNumber: `CLM-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`,
         patientId: "",
         connectionId: "",
         amount: "",
@@ -191,19 +189,6 @@ export default function HospitalClaims() {
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="claimNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Claim Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="CLM-2024-001" {...field} data-testid="input-claim-number" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                       <FormField
                         control={form.control}
                         name="amount"

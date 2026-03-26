@@ -1602,7 +1602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/hospital/patients/:patientId/insurance", async (req, res) => {
     try {
       const { patientId } = req.params;
-      console.log("[Insurance Lookup] Received patient UID:", patientId);
+      console.log("[Insurance Lookup] Received patient ID:", patientId);
       
       const walletAddress = req.headers["x-wallet-address"] as string;
       const hospital = await storage.getUserByWalletAddress(walletAddress);
@@ -1612,7 +1612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Only hospitals can access this endpoint" });
       }
 
-      const patient = await storage.getUserByUid(patientId);
+      const patient = await storage.getUser(patientId);
       console.log("[Insurance Lookup] Patient found:", patient ? { id: patient.id, uid: patient.uid, username: patient.username } : "Not found");
       
       if (!patient) {
@@ -1645,11 +1645,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Only hospitals can submit claims" });
       }
       
-      const claimSchema = insertClaimSchema.omit({ hospitalId: true, treatmentLogId: true });
+      const claimSchema = insertClaimSchema.omit({ id: true, hospitalId: true, treatmentLogId: true, claimNumber: true });
       const validatedData = claimSchema.parse(req.body);
 
-      // Look up the patient by their UID first
-      const patient = await storage.getUserByUid(validatedData.patientId);
+      // Generate unique claim number
+      const claimNumber = generateClaimNumber();
+
+      // Look up the patient by their user ID (not UID)
+      const patient = await storage.getUser(validatedData.patientId);
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
       }
@@ -1668,6 +1671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const claim = await storage.createClaim({
         ...validatedData,
+        claimNumber,
         patientId: patient.id,
         hospitalId: hospital.id,
         status: "pending",
