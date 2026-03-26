@@ -3607,7 +3607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const effectiveHospitalName = hospital.hospitalName || hospitalKyc?.institutionName;
 
       // Fetch all data in parallel to avoid sequential awaits
-      const [affiliatedByName, affiliatedByKyc, admissions, hospitalTreatments] = await Promise.all([
+      const [affiliatedByName, affiliatedByKyc, admissions, hospitalTreatments, allPatients] = await Promise.all([
         effectiveHospitalName
           ? storage.getUsersByHospital(effectiveHospitalName, "patient")
           : Promise.resolve([]),
@@ -3617,12 +3617,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getPatientAdmissions({ hospitalId: hospital.id }),
         // Only fetch treatments for THIS hospital instead of all treatments
         storage.getTreatmentLogs(undefined, undefined, hospital.id),
+        // Fallback: get all patients if no hospital name is set
+        !effectiveHospitalName ? storage.getUsersByRole("patient") : Promise.resolve([]),
       ]);
+
+      console.log("Patient data sources:", {
+        affiliatedByName: affiliatedByName.length,
+        affiliatedByKyc: affiliatedByKyc.length,
+        admissions: admissions.length,
+        hospitalTreatments: hospitalTreatments.length,
+        allPatients: allPatients.length,
+        effectiveHospitalName
+      });
 
       // Merge all patient sources, deduplicate
       const patientMap = new Map<string, any>();
       for (const p of affiliatedByName) patientMap.set(p.id, p);
       for (const p of affiliatedByKyc) if (!patientMap.has(p.id)) patientMap.set(p.id, p);
+      // Include all patients as fallback if no hospital name is set
+      if (!effectiveHospitalName) {
+        for (const p of allPatients) if (!patientMap.has(p.id)) patientMap.set(p.id, p);
+      }
 
       // Add admitted patients not already in the map
       const admittedIds = admissions.map((a) => a.patientId);
@@ -3718,7 +3733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const effectiveHospitalName = hospital.hospitalName || hospitalKyc?.institutionName;
       
       // Fetch affiliated doctors and hospital treatments in parallel
-      const [affiliatedDoctors, affiliatedByKyc, hospitalTreatments] = await Promise.all([
+      const [affiliatedDoctors, affiliatedByKyc, hospitalTreatments, allDoctors] = await Promise.all([
         effectiveHospitalName
           ? storage.getUsersByHospital(effectiveHospitalName, "doctor")
           : Promise.resolve([]),
@@ -3727,6 +3742,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : Promise.resolve([]),
         // Only fetch treatments for THIS hospital instead of all treatments
         storage.getTreatmentLogs(undefined, undefined, hospital.id),
+        // Fallback: get all doctors if no hospital name is set
+        !effectiveHospitalName ? storage.getUsersByRole("doctor") : Promise.resolve([]),
       ]);
 
       // Also include doctors who have treatment logs at this hospital
@@ -3742,6 +3759,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const doc of missingDoctors) {
           if (doc && doc.role === "doctor") doctorMap.set(doc.id, doc);
         }
+      }
+      
+      // Include all doctors as fallback if no hospital name is set
+      if (!effectiveHospitalName) {
+        for (const d of allDoctors) if (!doctorMap.has(d.id)) doctorMap.set(d.id, d);
       }
       
       const doctors = Array.from(doctorMap.values());
@@ -3810,10 +3832,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? await storage.getUsersByKYCAffiliatedHospital(effectiveHospitalName, "emergency_responder")
         : [];
 
+      // Fallback: get all emergency responders if no hospital name is set
+      const allRespondersFallback = !effectiveHospitalName ? await storage.getUsersByRole("emergency_responder") : [];
+
       // Merge and deduplicate
       const responderMap = new Map<string, any>();
       for (const r of affiliatedByName) responderMap.set(r.id, r);
       for (const r of affiliatedByKyc) if (!responderMap.has(r.id)) responderMap.set(r.id, r);
+      // Include all responders as fallback if no hospital name is set
+      if (!effectiveHospitalName) {
+        for (const r of allRespondersFallback) if (!responderMap.has(r.id)) responderMap.set(r.id, r);
+      }
       const allResponders = Array.from(responderMap.values());
       
       // Enrich with KYC data

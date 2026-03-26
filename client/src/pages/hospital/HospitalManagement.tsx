@@ -14,7 +14,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Stethoscope, Search, Loader2, User, Activity, Calendar, FileText, UserPlus, UserMinus, Phone, Droplet, Eye, Ambulance } from "lucide-react";
+import { Users, Stethoscope, Search, Loader2, User, Activity, Calendar, FileText, UserPlus, UserMinus, Phone, Droplet, Eye, Ambulance, AlertTriangle } from "lucide-react";
 
 export default function HospitalManagement() {
   const { uid } = useWallet();
@@ -65,6 +65,12 @@ export default function HospitalManagement() {
     },
     enabled: !!uid,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Check if hospital name is set
+  const { data: userProfile } = useQuery<any>({
+    queryKey: ["/api/user/profile"],
+    enabled: !!uid,
   });
 
   const admitPatientMutation = useMutation({
@@ -149,6 +155,31 @@ export default function HospitalManagement() {
         <h1 className="text-3xl font-bold">Hospital Management</h1>
         <p className="text-muted-foreground">Manage patients and doctors in your hospital</p>
       </div>
+
+      {!userProfile?.hospitalName && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                Hospital Name Not Set
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>
+                  Your hospital name is not configured. This may limit the display of affiliated patients, doctors, and emergency responders.
+                  Please set your hospital name in{" "}
+                  <a href="/hospital/settings" className="font-medium underline text-yellow-700 hover:text-yellow-600">
+                    Hospital Settings
+                  </a>{" "}
+                  to see all associated users.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
