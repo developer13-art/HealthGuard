@@ -85,7 +85,7 @@ export function AppSidebar() {
   const insuranceNav = [
     { title: "Dashboard", icon: Home, url: "/insurance" },
     { title: "Patient Requests", icon: Users, url: "/insurance/connections" },
-    { title: "Pending Claims", icon: ClipboardList, url: "/insurance/claims" },
+    { title: "Claims managements", icon: ClipboardList, url: "/insurance/claims" },
     { title: "Payments", icon: DollarSign, url: "/insurance/payments" },
     { title: "Policies", icon: FileText, url: "/insurance/policies" },
     { title: "Analytics", icon: Activity, url: "/insurance/analytics" },
