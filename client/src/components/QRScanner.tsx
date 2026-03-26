@@ -62,9 +62,10 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
           html5QrCodeRef.current = html5QrCode;
 
           const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
+            fps: 15,
+            qrbox: { width: 300, height: 300 },
             aspectRatio: 1.0,
+            disableFlip: false,
           };
 
           await html5QrCode.start(
@@ -95,6 +96,7 @@ export default function QRScanner({ onAccessRequested }: QRScannerProps) {
             },
             (_errorMessage) => {
               // Per-frame errors are expected when no QR is in view — suppress them
+              // This is normal operation, only warn in console for debugging
             }
           );
         } catch (err: any) {
