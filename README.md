@@ -1,5 +1,5 @@
 # HealthGuardX - Decentralized Health Identity System
-
+## Important note to reviewers, judges. this app needed an admin to approve kyc verifications and role application approval so pls when testing you can send a mail to abdurrazaqiliyaa@gmail.com to notify for that so that all actions can be approved or contact me directly for fast action to 09123302285 or 08142241819. or if you want to add your own admin default wallet address you can just navigate to server/routes.ts to add your wallet by adding "|| then your wallet" so that once connected you can be able to work as an admin.
 ## Overview
 
 HealthGuardX is a blockchain-integrated system designed to provide secure, patient-owned medical records and streamline insurance claim management. It features emergency QR access, role-based dashboards for various healthcare stakeholders (patients, doctors, hospitals, emergency responders, insurance providers, administrators), and blockchain-verified insurance claims. The project operates on the BlockDAG ecosystem with BDAG as the primary currency. The project aims to enhance data security, improve accessibility for authorized personnel, and provide a robust platform for managing health identities and claims.
