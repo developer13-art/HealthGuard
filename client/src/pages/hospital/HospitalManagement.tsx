@@ -38,18 +38,33 @@ export default function HospitalManagement() {
   const [dischargeNotes, setDischargeNotes] = useState("");
 
   const { data: patients, isLoading: loadingPatients } = useQuery<any[]>({
-    queryKey: ["/api/hospital/all-patients"],
+    queryKey: ["hospital", "all-patients"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/hospital/all-patients");
+      return response.json();
+    },
     enabled: !!uid,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: doctors, isLoading: loadingDoctors } = useQuery<any[]>({
-    queryKey: ["/api/hospital/all-doctors"],
+    queryKey: ["hospital", "all-doctors"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/hospital/all-doctors");
+      return response.json();
+    },
     enabled: !!uid,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: emergencyResponders, isLoading: loadingResponders } = useQuery<any[]>({
-    queryKey: ["/api/hospital/all-emergency-responders"],
+    queryKey: ["hospital", "all-emergency-responders"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/hospital/all-emergency-responders");
+      return response.json();
+    },
     enabled: !!uid,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const admitPatientMutation = useMutation({
@@ -58,9 +73,8 @@ export default function HospitalManagement() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hospital/all-patients"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hospital/patients"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/doctor/patients"] });
+      queryClient.invalidateQueries({ queryKey: ["hospital", "all-patients"] });
+      queryClient.invalidateQueries({ queryKey: ["hospital", "all-doctors"] });
       toast({ title: "Success", description: "Patient admitted successfully" });
       setAdmitDialogOpen(false);
       setAdmissionData({ admissionReason: "", doctorId: undefined, roomNumber: "", ward: "" });
@@ -76,9 +90,8 @@ export default function HospitalManagement() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hospital/all-patients"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hospital/patients"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/doctor/patients"] });
+      queryClient.invalidateQueries({ queryKey: ["hospital", "all-patients"] });
+      queryClient.invalidateQueries({ queryKey: ["hospital", "all-doctors"] });
       toast({ title: "Success", description: "Patient discharged successfully" });
       setDischargeDialogOpen(false);
       setDischargeNotes("");
