@@ -66,7 +66,7 @@ export default function HospitalDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">BDAG{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">USD{totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Paid claims</p>
           </CardContent>
         </Card>

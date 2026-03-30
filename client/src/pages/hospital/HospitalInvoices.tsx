@@ -53,7 +53,7 @@ export default function HospitalInvoices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-total-revenue">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `BDAG ${totalRevenue.toLocaleString()}`}
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `USD ${totalRevenue.toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">Paid claims</p>
           </CardContent>
@@ -66,7 +66,7 @@ export default function HospitalInvoices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-chart-5" data-testid="text-pending-amount">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `BDAG ${pendingAmount.toLocaleString()}`}
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `USD ${pendingAmount.toLocaleString()}`}
             </div>
             <p className="text-xs text-muted-foreground">Under review</p>
           </CardContent>
@@ -125,7 +125,7 @@ export default function HospitalInvoices() {
                       <Badge variant="outline">{claim.claimType}</Badge>
                     </TableCell>
                     <TableCell className="font-semibold" data-testid="text-claim-amount">
-                      BDAG {parseFloat(claim.amount || "0").toLocaleString()}
+                      USD {parseFloat(claim.amount || "0").toLocaleString()}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(claim.submittedAt).toLocaleDateString()}
@@ -145,7 +145,7 @@ export default function HospitalInvoices() {
                     </TableCell>
                     <TableCell className="font-medium">
                       {claim.paidAmount 
-                        ? `BDAG ${parseFloat(claim.paidAmount).toLocaleString()}`
+                        ? `USD ${parseFloat(claim.paidAmount).toLocaleString()}`
                         : "-"
                       }
                     </TableCell>
@@ -236,14 +236,14 @@ export default function HospitalInvoices() {
                   <div>
                     <p className="text-sm text-muted-foreground">Claim Amount</p>
                     <p className="text-lg font-bold text-primary" data-testid="detail-claim-amount">
-                      BDAG {parseFloat(selectedClaim.amount || "0").toLocaleString()}
+                      USD {parseFloat(selectedClaim.amount || "0").toLocaleString()}
                     </p>
                   </div>
                   {selectedClaim.paidAmount && (
                     <div>
                       <p className="text-sm text-muted-foreground">Paid Amount</p>
                       <p className="text-lg font-bold text-chart-2" data-testid="detail-paid-amount">
-                        BDAG {parseFloat(selectedClaim.paidAmount).toLocaleString()}
+                        USD {parseFloat(selectedClaim.paidAmount).toLocaleString()}
                       </p>
                     </div>
                   )}

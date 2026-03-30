@@ -16,7 +16,7 @@ import { ethers } from "ethers";
 import { useEffect } from "react";
 
 const ADMIN_WALLET = "0x82e160da7180AF3e2BB89D7095296d61e139a5a4";
-const SUBSCRIPTION_AMOUNT = "2"; // 2 BDAG
+const SUBSCRIPTION_AMOUNT = "20"; // 20 USD
 
 export default function PatientApplyRole() {
   const { uid } = useWallet();
@@ -177,7 +177,7 @@ export default function PatientApplyRole() {
     if ((selectedRole === "hospital" || selectedRole === "insurance_provider") && !paymentConfirmed) {
       toast({
         title: "Payment Required",
-        description: "Please complete the 2 BDAG subscription payment before submitting your application.",
+        description: "Please complete the 20 USD subscription payment before submitting your application.",
         variant: "destructive",
       });
       return;
@@ -269,12 +269,12 @@ export default function PatientApplyRole() {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="space-y-2">
                 <p>
-                  {roles.find(r => r.value === selectedRole)?.label} accounts require a 2 BDAG annual subscription fee. 
+                  {roles.find(r => r.value === selectedRole)?.label} accounts require a 20 USD annual subscription fee. 
                   This payment must be completed via MetaMask before you can submit your KYC application.
                 </p>
                 <p className="text-xs mt-2 pt-2 border-t">
                   <strong>Network Requirements:</strong> For testing, you can use any EVM-compatible network (Ethereum, Sepolia, Polygon, etc.). 
-                  Make sure you have at least 2 units of the native currency plus gas fees in your connected wallet.
+                  Make sure you have at least 20 USD units of the native currency plus gas fees in your connected wallet.
                 </p>
               </AlertDescription>
             </Alert>
@@ -282,7 +282,7 @@ export default function PatientApplyRole() {
             <div className="bg-muted/50 p-6 rounded-lg space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Subscription Amount:</span>
-                <span className="text-2xl font-bold text-primary">{SUBSCRIPTION_AMOUNT} BDAG</span>
+                <span className="text-2xl font-bold text-primary">{SUBSCRIPTION_AMOUNT} USD</span>
               </div>
               <div className="flex justify-between items-center text-sm text-muted-foreground">
                 <span>Payment Method:</span>
