@@ -149,7 +149,7 @@ export default function ConsultationChat({ userRole }: ConsultationChatProps) {
                   data-testid="button-join-video"
                 >
                   <Video className="h-4 w-4" />
-                  Join Video
+                  Join Video consultation
                 </Button>
               )}
               <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:text-green-400">
