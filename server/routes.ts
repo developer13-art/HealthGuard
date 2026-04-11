@@ -9,7 +9,7 @@ import { ipfsService } from "./ipfs";
 import { blockchainService } from "./blockchain";
 
 // Admin wallet address
-const ADMIN_WALLET_ADDRESS = "0x82e160da7180AF3e2BB89D7095296d61e139a5a4".toLowerCase();
+const ADMIN_WALLET_ADDRESS = "0xE7DA56FB9c49883ADEd3451C54CAcea3fBEbf0Ab".toLowerCase();
 
 // Validation schemas for patient admissions
 const admitPatientSchema = z.object({
