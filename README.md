@@ -35,11 +35,11 @@ HealthGuardX is a blockchain-integrated decentralized health identity system tha
 - **Universal Accessibility**: Access your health records from anywhere, anytime
 - **Streamlined Insurance**: Automated claim processing reduces paperwork and delays
 
-### Built for African Healthcare Realities
+### Built for Nation Wide Healthcare Realities
 
-The system is specifically designed to address challenges in African healthcare systems:
+The system is specifically designed to address challenges in World Wide healthcare systems:
 - Works with limited internet connectivity (QR codes work offline)
-- Affordable subscription model (20 USD for annual access)
+- Affordable subscription model (20 USD for annual access as now for testing)
 - Multi-stakeholder support (hospitals, clinics, insurance providers)
 - Emergency response capabilities for areas with limited infrastructure
 
@@ -150,6 +150,7 @@ IPFS/Pinata ← Decentralized file storage
 - Review and approve/reject insurance claims
 - Manage insurance policies and premium payments
 - View analytics on claims processing
+- Manage all connected patients
 
 ### 6. Admin
 - Approve/reject KYC verifications
@@ -275,7 +276,7 @@ SOLANA_RPC_URL=...             # Optional custom RPC endpoint
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/healthguardx
+git clone https://github.com/developer13-art/healthguard
 
 # Install dependencies
 npm install

@@ -1,7 +1,7 @@
 # HealthGuardX — Full Technical & User Documentation
 
 > **Built on Solana · Powered by Phantom Wallet · Secured by IPFS**
-> © 2025 HealthGuardX. All rights reserved.
+> © 2026 HealthGuardX. All rights reserved.
 
 ---
 
