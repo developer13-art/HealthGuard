@@ -232,6 +232,143 @@ IPFS/Pinata ← Decentralized file storage
 
 ## Technical Implementation
 
+## 2. Technology Stack
+
+### Frontend
+| Layer | Technology |
+|---|---|
+| Framework | React 18 + TypeScript |
+| Build Tool | Vite 5 |
+| UI Library | Shadcn/ui (Radix UI primitives) |
+| Styling | Tailwind CSS v3 |
+| Data Fetching | TanStack Query (React Query v5) |
+| Routing | Wouter |
+| Blockchain | `@solana/web3.js` |
+| Wallet | Phantom (via `window.phantom.solana`) |
+| Animations | Framer Motion |
+| Forms | React Hook Form + Zod |
+
+### Backend
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 20 + TypeScript |
+| Server | Express.js 4 |
+| ORM | Drizzle ORM |
+| Database | PostgreSQL (Neon serverless) |
+| Sessions | express-session + MemoryStore |
+| Scheduler | node-cron |
+| IPFS | Pinata API |
+| Blockchain | `@solana/web3.js` (read-only RPC) |
+
+---
+
+## 3. Wallet Integration — Phantom
+
+### How Phantom Connects
+
+Phantom is detected differently depending on the user's environment:
+
+```
+┌─────────────────────────────────────┐
+│          User opens HealthGuardX    │
+└─────────────────┬───────────────────┘
+                  │
+       ┌──────────▼──────────┐
+       │  Is window.phantom  │
+       │  .solana injected?  │
+       └──────────┬──────────┘
+         YES      │          NO
+          │       │           │
+          │    ┌──▼──┐     ┌──▼──────────────┐
+          │    │ Is  │     │ Is the user on  │
+          │    │ mob │     │  mobile?        │
+          │    └──┬──┘     └──┬─────────────┘
+          │    YES│         YES│           NO
+          │       │            │            │
+   ┌──────▼──┐  ┌─▼────────┐ ┌▼─────────┐ ┌▼──────────────┐
+   │ Desktop │  │ Inside   │ │ Redirect │ │ Show "Install │
+   │ ext.    │  │ Phantom  │ │ to       │ │ Phantom"      │
+   │ connect │  │ browser  │ │ Phantom  │ │ button        │
+   │ normal  │  │ normal   │ │ deep link│ └───────────────┘
+   └─────────┘  └──────────┘ └──────────┘
+```
+
+### Connection Modes
+
+| Mode | Description | How it's detected |
+|---|---|---|
+| `extension` | Phantom browser extension (desktop) or Phantom in-app browser (mobile) | `window.phantom?.solana?.isPhantom === true` |
+| `mobile-app` | User is on mobile without Phantom injected | `detectMobile() && !getPhantomProvider()` |
+| `not-available` | Desktop, no extension installed | `!isMobile && !getPhantomProvider()` |
+
+### Mobile Deep Link
+
+When a user is on a mobile device without Phantom's browser, the app redirects to:
+```
+https://phantom.app/ul/browse/<encoded-url>?ref=<encoded-origin>
+```
+This opens the current page inside Phantom's built-in browser, where `window.solana` is automatically injected.
+
+### Phantom SDK Methods Used
+
+```typescript
+// Detect provider
+const provider = window.phantom?.solana ?? window.solana;
+
+// Connect (returns PublicKey)
+const { publicKey } = await provider.connect();
+const address = publicKey.toString(); // base58 Solana address
+
+// Disconnect
+await provider.disconnect();
+
+// Sign a message (for payment auth, identity proofs)
+const encoded = new TextEncoder().encode(message);
+const { signature } = await provider.signMessage(encoded, "utf8");
+const sigBase64 = Buffer.from(signature).toString("base64");
+
+// Listen for account changes
+provider.on("accountChanged", (publicKey) => { ... });
+provider.off("accountChanged", handler);
+```
+
+### Authentication Flow
+
+1. User clicks **Connect Wallet**
+2. Phantom prompts for connection approval
+3. Returns `publicKey` (Solana base58 address ~44 chars)
+4. App calls `POST /api/auth/connect` with `{ walletAddress }`
+5. Server finds or creates user record, returns `{ uid, role, status }`
+6. Session data persisted in `localStorage` and React state
+7. User redirected to their role dashboard
+
+---
+
+## 4. System Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        Client (Browser)                          │
+│  React + Vite + TanStack Query + @solana/web3.js                 │
+│  Phantom Wallet (window.solana / window.phantom.solana)          │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ HTTPS / WebSocket (HMR in dev)
+┌────────────────────────────▼─────────────────────────────────────┐
+│                     Express.js Server (port 5000)                │
+│  • Serves Vite dev middleware (dev) / static files (prod)        │
+│  • REST API routes (/api/*)                                      │
+│  • Session middleware (express-session)                          │
+│  • Billing scheduler (node-cron)                                 │
+└──────────┬──────────────────┬──────────────────┬─────────────────┘
+           │                  │                  │
+    ┌──────▼──────┐   ┌───────▼──────┐   ┌──────▼──────────┐
+    │  PostgreSQL │   │  Solana RPC  │   │  Pinata IPFS    │
+    │  (Neon)     │   │  (Devnet/    │   │  (file storage) │
+    │  Primary DB │   │   Mainnet)   │   │                 │
+    └─────────────┘   └──────────────┘   └─────────────────┘
+```
+
+
 ### Environment Variables
 
 ```env
