@@ -30,9 +30,32 @@ export default defineConfig({
             "@radix-ui/react-popper": path.resolve(process.cwd(), "node_modules", "@radix-ui", "react-popper", "dist", "index.js"),
         },
     },
+    define: {
+        global: "globalThis",
+    },
+    optimizeDeps: {
+        include: ["buffer"],
+    },
     build: {
         outDir: path.resolve(process.cwd(), "dist/public"), // ✅ Output goes here
         emptyOutDir: true, // Cleans dist before build
+        rollupOptions: {
+            plugins: [
+                {
+                    name: "buffer-polyfill",
+                    resolveId(id) {
+                        if (id === "buffer") {
+                            return { id: "buffer", external: false };
+                        }
+                    },
+                    load(id) {
+                        if (id === "buffer") {
+                            return "export default Buffer;";
+                        }
+                    },
+                },
+            ],
+        },
     },
     server: {
         host: "0.0.0.0",
