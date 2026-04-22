@@ -61,8 +61,8 @@ HealthGuardX uses modern web technologies combined with Solana blockchain princi
 
 #### Backend Layer
 - **Server**: Express.js with TypeScript for robust API development
-- **Database**: PostgreSQL (Neon serverless) for reliable, scalable data storage
-- **ORM**: Drizzle ORM for type-safe database queries
+- **Database**: Firebase Firestore for real-time, scalable data storage
+- **Data Layer**: Custom storage abstraction using Zod validation schemas
 - **Authentication**: Web3 wallet-based (Phantom) — no passwords to remember or lose
 - **Blockchain Library**: `@solana/web3.js` for server-side Solana RPC calls
 
@@ -109,7 +109,7 @@ Patient Browser
      ↓ (HTTPS)
 Express.js API (Port 5000)
      ↓
-PostgreSQL (Neon Serverless) ← Primary data store
+Firebase Firestore ← Primary data store
      ↓
 Solana RPC ← Blockchain verification & audit trail
      ↓
@@ -253,8 +253,8 @@ IPFS/Pinata ← Decentralized file storage
 |---|---|
 | Runtime | Node.js 20 + TypeScript |
 | Server | Express.js 4 |
-| ORM | Drizzle ORM |
-| Database | PostgreSQL (Neon serverless) |
+| Data Layer | Zod + Firebase Admin SDK |
+| Database | Google Cloud Firestore (Firebase) |
 | Sessions | express-session + MemoryStore |
 | Scheduler | node-cron |
 | IPFS | Pinata API |
@@ -372,7 +372,7 @@ provider.off("accountChanged", handler);
 ### Environment Variables
 
 ```env
-DATABASE_URL=postgresql://...  # Neon PostgreSQL connection string
+FIREBASE_CREDENTIALS_PATH=./firebase-service-account.json  # Firebase service account
 PINATA_API_KEY=...             # IPFS storage (optional)
 PINATA_SECRET_KEY=...          # IPFS storage (optional)
 SOLANA_NETWORK=devnet          # mainnet | devnet | testnet

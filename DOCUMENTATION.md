@@ -64,8 +64,8 @@
 |---|---|
 | Runtime | Node.js 20 + TypeScript |
 | Server | Express.js 4 |
-| ORM | Drizzle ORM |
-| Database | PostgreSQL (Neon serverless) |
+| Database | Firebase Firestore |
+| Validation | Zod schemas |
 | Sessions | express-session + MemoryStore |
 | Scheduler | node-cron |
 | IPFS | Pinata API |
@@ -187,7 +187,7 @@ provider.off("accountChanged", handler);
 
 ## 5. Database Schema
 
-Tables defined in `shared/schema.ts` using Drizzle ORM:
+Tables defined in `shared/schema.ts` using Zod schemas (stored in Firebase Firestore):
 
 ### `users`
 | Column | Type | Description |
@@ -567,7 +567,7 @@ https://gateway.pinata.cloud/ipfs/<CID>
 | Threat | Mitigation |
 |---|---|
 | Phishing / account takeover | Phantom wallet: private key never leaves browser |
-| SQL injection | Drizzle ORM parameterized queries |
+| NoSQL injection | Zod schema validation on all inputs |
 | XSS | React's inherent output escaping |
 | CSRF | Session tokens + same-origin checks |
 | Medical record eavesdropping | Client-side AES-256 encryption before upload |
@@ -595,7 +595,7 @@ To add yourself as admin, find your Solana public key from Phantom settings and 
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | ✅ Yes | — | Neon PostgreSQL connection string |
+| `FIREBASE_CREDENTIALS_PATH` | ✅ Yes | — | Path to Firebase service account JSON file |
 | `PINATA_API_KEY` | ⚠️ Optional | — | Pinata IPFS API key |
 | `PINATA_SECRET_KEY` | ⚠️ Optional | — | Pinata IPFS secret key |
 | `SOLANA_NETWORK` | No | `devnet` | `mainnet` / `devnet` / `testnet` |
@@ -645,8 +645,8 @@ healthguardx/
 ├── server/                    # Express backend
 │   ├── index.ts               # App entry + startup
 │   ├── routes.ts              # All API endpoints (4000+ lines)
-│   ├── storage.ts             # DB abstraction layer
-│   ├── db.ts                  # Drizzle + Neon connection
+│   ├── storage.ts             # Firebase Firestore abstraction layer
+│   ├── db.ts                  # Firebase Admin SDK initialization
 │   ├── blockchain.ts          # Solana RPC service
 │   ├── blockchain-config.ts   # Solana network config
 │   ├── ipfs.ts                # Pinata IPFS service
@@ -654,7 +654,7 @@ healthguardx/
 │   └── vite.ts                # Vite dev middleware
 │
 ├── shared/
-│   └── schema.ts              # Drizzle schema (shared types)
+│   └── schema.ts              # Zod schemas (shared types, Firebase models)
 │
 ├── abis/                      # Legacy EVM ABIs (kept for reference)
 ├── contracts/                 # Legacy Solidity contracts (reference)
@@ -683,7 +683,7 @@ npm install
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL
+# Edit .env with your Firebase credentials
 
 # 3. Push database schema
 npm run db:push
@@ -802,7 +802,7 @@ Hotline: +2349123302285 / +2348142241819
 
 ### Q: "Server error during authentication"
 
-**A:** The DATABASE_URL may be incorrect or expired. Check your `.env` file.
+**A:** Your FIREBASE_CREDENTIALS_PATH may be incorrect or the service account file may be missing. Check your `.env` file and ensure `firebase-service-account.json` exists in the project root.
 
 ### Q: IPFS upload fails
 

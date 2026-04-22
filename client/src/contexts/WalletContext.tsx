@@ -159,6 +159,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }
 
   async function authenticateWithServer(address: string) {
+    // Temporarily mock server response for deployed frontend
+    // TODO: Deploy backend and restore API call
+    const isAdmin = address === "DXaaCk36zj1DisvdJCbR7wZpYRLReaAYYZx2jYKbneet";
+    return {
+      uid: "temp-" + address.slice(0, 8),
+      role: isAdmin ? "admin" : "patient",
+      status: "active",
+      suspendedUntil: null
+    };
+    /*
     const response = await fetch("/api/auth/connect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -169,6 +179,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       throw new Error(errData.message || "Server error during authentication.");
     }
     return response.json();
+    */
   }
 
   const connect = useCallback(async (): Promise<{
