@@ -44,7 +44,11 @@ export const getQueryFn: <T>(options: {
       ...(walletAddress ? { "x-wallet-address": walletAddress } : {}),
     };
 
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = (queryKey as Array<unknown>)
+      .map((segment) => encodeURIComponent(String(segment)))
+      .join("/");
+
+    const res = await fetch(url, {
       credentials: "include",
       headers,
     });

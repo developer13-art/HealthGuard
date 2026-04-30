@@ -214,7 +214,7 @@ export default function HospitalClaims() {
                             <div className="relative">
                               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                               <Input
-                                placeholder="Enter patient ID (e.g., user ID from database)"
+                                placeholder="Enter patient ID, UID, or username"
                                 className="pl-8"
                                 {...field}
                                 onChange={(e) => handlePatientIdChange(e.target.value)}

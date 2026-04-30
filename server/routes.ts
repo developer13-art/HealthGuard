@@ -1624,7 +1624,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Only hospitals can access this endpoint" });
       }
 
-      const patient = await storage.getUser(patientId);
+      let patient = await storage.getUser(patientId);
+      if (!patient) {
+        patient = await storage.getUserByUid(patientId);
+      }
+      if (!patient) {
+        patient = await storage.getUserByUsername(patientId);
+      }
+
       console.log("[Insurance Lookup] Patient found:", patient ? { id: patient.id, uid: patient.uid, username: patient.username } : "Not found");
       
       if (!patient) {
@@ -1664,7 +1671,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const claimNumber = generateClaimNumber();
 
       // Look up the patient by their user ID (not UID)
-      const patient = await storage.getUser(validatedData.patientId);
+      let patient = await storage.getUser(validatedData.patientId);
+      if (!patient) {
+        patient = await storage.getUserByUid(validatedData.patientId);
+      }
+      if (!patient) {
+        patient = await storage.getUserByUsername(validatedData.patientId);
+      }
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
       }
